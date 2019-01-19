@@ -1,0 +1,22 @@
+version: '3.3'
+
+services:
+
+    app:
+        volumes:
+          - ./app:/app          
+        build:
+          context: ./
+          dockerfile: ./dockerfiles/appfile        
+        ports:
+          - "127.0.0.1:5000:5000"   # Swagger UI, REST API
+
+    newman:
+        volumes:
+          - ./tests:/tests   
+        depends_on:
+          - app
+        build:
+          context: ./
+          dockerfile: ./dockerfiles/testfile
+        command: run /tests/collection.json -e /tests/docker_environment.json -g /tests/docker_globals.json
