@@ -1,0 +1,122 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: 'drayson test API'
+  description: "API to allow backend testing"
+consumes:
+  - application/json
+produces:
+  - application/json
+basePath: /v1
+paths:
+  /products:
+    get:
+      operationId: controller.products.products_list
+      description: Return a list of products
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/Products'
+        404:
+          description: Product not found
+  /product:
+    post:
+      operationId: controller.products.create_product
+      parameters:
+        - name: name
+          in: formData
+          type: string
+          description: Name of the product
+          example: 'Lavender heart'
+          required: true
+        - name: price
+          in: formData
+          type: float
+          description: Price of the product
+          required: true
+          example: 9.95
+      responses:
+          200: 
+            description: Successful response
+            schema:
+              $ref: '#/definitions/Product'
+          
+  /product/{product_code}:
+    get:
+      operationId: controller.products.get_product
+      description: Return a single product
+      parameters:
+        - $ref: '#/parameters/ProductCode'
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: "#/definitions/Product"
+        404:
+          description: Not found
+    put:
+      operationId: controller.products.update_product
+      description: Update a product
+      parameters:
+        - $ref: '#/parameters/ProductCode'
+        - name: name
+          in: formData
+          type: string
+          description: Name of the product
+          example: 'Lavender heart'
+          required: false
+        - name: price
+          in: formData
+          type: float
+          description: Price of the product
+          required: false
+          example: 9.95
+
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: "#/definitions/Product"
+        404:
+          description: Not found
+    delete:
+      operationId: controller.products.delete_product
+      description: Delete a product
+      parameters:
+        - $ref: '#/parameters/ProductCode'
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: "#/definitions/Product"
+        404:
+          description: Not found
+      
+parameters:
+  ProductCode:
+    name: product_code
+    type: string
+    in: path
+    description: the product_code to look for
+    required: true
+definitions:
+  Product:
+    description: A product
+    properties:
+      product_code:
+        type: integer
+        description: the id of the product
+        example: 001
+      name:
+        type: string
+        description: the name of the product
+        example: Lavender heart
+      product_price:
+        type: number
+        description: price, in pounds
+        example: 9.25
+  Products:
+    type: array
+    items: 
+      $ref: '#/definitions/Product'
