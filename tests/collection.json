@@ -1,0 +1,586 @@
+{
+	"info": {
+		"_postman_id": "cf3545bc-e19a-4e3d-9967-ee7e45bc6818",
+		"name": "QA tech test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get product list",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "acdf8528-17ec-43cc-a7ed-52b3cd976bad",
+						"exec": [
+							"// example using pm.response.to.have",
+							"pm.test(\"response is ok\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"response has at least one entry\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.lengthOf.at.least(1);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://{{hostname}}:5000/v1/products",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"port": "5000",
+					"path": [
+						"v1",
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Post new product successfully",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "b90ca7ce-d5fb-458e-be13-4e99fb7d0266",
+						"exec": [
+							"",
+							"pm.test(\"response is ok\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"response returns null\", function () {",
+							"    pm.expect(pm.response.json()).to.be.null;",
+							"});",
+							"",
+							"pm.test(\"the added product exists\", function () {",
+							"    var hostname = pm.environment.get(\"hostname\");",
+							"    pm.sendRequest('http://'+hostname+':5000/v1/products', function (err, res) {",
+							"        var jsonData = res.json();",
+							"        var last_product = jsonData[jsonData.length-1];",
+							"        var timestamp = pm.globals.get(\"timestamp_test\");",
+							"        pm.expect(last_product.name).to.include(timestamp);",
+							"        pm.expect(last_product.price).to.equal(\"5.10\");",
+							"        pm.expect(last_product.id).to.be.a('number');",
+							"        pm.globals.set(\"last_product_id\", last_product.id);",
+							"    });",
+							"});",
+							"",
+							"postman.setNextRequest('Get product');",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "1e242e97-e980-4f7f-aa53-972d6a9d32cd",
+						"exec": [
+							"pm.globals.set(\"timestamp_test\", new Date());"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "name",
+							"value": "Lavender shortbread {{timestamp_test}}",
+							"type": "text"
+						},
+						{
+							"key": "price",
+							"value": "5.10",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://{{hostname}}:5000/v1/product",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"port": "5000",
+					"path": [
+						"v1",
+						"product"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get product",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "b90ca7ce-d5fb-458e-be13-4e99fb7d0266",
+						"exec": [
+							"",
+							"pm.test(\"response is ok\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"response returns the latest product\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var timestamp = pm.globals.get(\"timestamp_test\");",
+							"    var last_id = pm.globals.get(\"last_product_id\");",
+							"    ",
+							"    pm.expect(jsonData.id).to.equal(last_id);",
+							"    pm.expect(jsonData.name).to.include(timestamp);",
+							"    pm.expect(jsonData.price).to.equal(\"5.10\");",
+							"});",
+							"",
+							"postman.setNextRequest('Edit product');",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "1e242e97-e980-4f7f-aa53-972d6a9d32cd",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://{{hostname}}:5000/v1/product/{{last_product_id}}",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"port": "5000",
+					"path": [
+						"v1",
+						"product",
+						"{{last_product_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Edit product",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "b90ca7ce-d5fb-458e-be13-4e99fb7d0266",
+						"exec": [
+							"",
+							"pm.test(\"response is ok\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"pm.test(\"response returns null\", function () {",
+							"    pm.expect(pm.response.json()).to.be.null;",
+							"});",
+							"",
+							"pm.test(\"the edited product exists\", function () {",
+							"    var timestamp = pm.globals.get(\"timestamp_test\");",
+							"    var last_id = pm.globals.get(\"last_product_id\");",
+							"    var hostname = pm.environment.get(\"hostname\");",
+							"",
+							"    pm.sendRequest('http://'+hostname+':5000/v1/product/' + last_id, function (err, res) {",
+							"        var jsonData = res.json();",
+							"        pm.expect(jsonData.id).to.equal(last_id);",
+							"        pm.expect(jsonData.name).to.include(timestamp);",
+							"        pm.expect(jsonData.name).to.include(\"Lavender heart\");",
+							"        pm.expect(jsonData.price).to.equal(\"29.11\");",
+							"    });",
+							"});",
+							"",
+							"postman.setNextRequest('Delete product');",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "1e242e97-e980-4f7f-aa53-972d6a9d32cd",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "name",
+							"value": "Lavender heart {{timestamp_test}}",
+							"type": "text"
+						},
+						{
+							"key": "price",
+							"value": "29.11",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://{{hostname}}:5000/v1/product/{{last_product_id}}",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"port": "5000",
+					"path": [
+						"v1",
+						"product",
+						"{{last_product_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete product",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "b90ca7ce-d5fb-458e-be13-4e99fb7d0266",
+						"exec": [
+							"",
+							"pm.test(\"response is ok\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"pm.test(\"response returns null\", function () {",
+							"    pm.expect(pm.response.json()).to.be.null;",
+							"});",
+							"",
+							"pm.test(\"the deleted product does not exists\", function () {",
+							"    var timestamp = pm.globals.get(\"timestamp_test\");",
+							"    var last_id = pm.globals.get(\"last_product_id\");",
+							"    var hostname = pm.environment.get(\"hostname\");",
+							"",
+							"    pm.sendRequest('http://'+hostname+':5000/v1/product/' + last_id, function (err, res) {",
+							"        var jsonData = res.json();",
+							"        pm.expect(jsonData.code).to.equal(404);",
+							"        pm.expect(jsonData.status).to.equal(\"NOT FOUND\");",
+							"    });",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "1e242e97-e980-4f7f-aa53-972d6a9d32cd",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://{{hostname}}:5000/v1/product/{{last_product_id}}",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"port": "5000",
+					"path": [
+						"v1",
+						"product",
+						"{{last_product_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create product, add name with 300 char",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "b90ca7ce-d5fb-458e-be13-4e99fb7d0266",
+						"exec": [
+							"",
+							"pm.test(\"response is ok\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"pm.test(\"the added product exists\", function () {",
+							"    var hostname = pm.environment.get(\"hostname\");",
+							"",
+							"    pm.sendRequest('http://'+hostname+':5000/v1/products', function (err, res) {",
+							"        var jsonData = res.json();",
+							"        var last_product = jsonData[jsonData.length-1];",
+							"        pm.expect(last_product.name).to.equal(\"SkRWHajoD81gtZaZvDu39rbCZEz7F97uW8p7gnet4x7PHnq6JbVQ3E2TfJiT1eS9\" + \"1hR6n01S5IeMe60MbxKWEpJRWmnYcFBneWqw6giVank9Tbg9q9l7vydXInTBymQx\" + \"TjOwZzOTmu5cUr0p5j3s0WpURUR1Odk7oNcOUYAkFULmpUbkdS98KMD8wMgBd64v\" + \"PS5FS0Q1zPz7r7tzDgpb9Uf1HoLLr423WmxFUXmoAtAqhGnwtM8yvn02BBBeqidP\"+ \"G7YAbDJPYd3fbGII44v1D96DS1wZJSQ35YD74w6Ap3oq\");",
+							"        pm.expect(last_product.price).to.equal(\"5\");",
+							"        pm.expect(last_product.id).to.be.a('number');",
+							"    });",
+							"});",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "1e242e97-e980-4f7f-aa53-972d6a9d32cd",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "name",
+							"value": "SkRWHajoD81gtZaZvDu39rbCZEz7F97uW8p7gnet4x7PHnq6JbVQ3E2TfJiT1eS91hR6n01S5IeMe60MbxKWEpJRWmnYcFBneWqw6giVank9Tbg9q9l7vydXInTBymQxTjOwZzOTmu5cUr0p5j3s0WpURUR1Odk7oNcOUYAkFULmpUbkdS98KMD8wMgBd64vPS5FS0Q1zPz7r7tzDgpb9Uf1HoLLr423WmxFUXmoAtAqhGnwtM8yvn02BBBeqidPG7YAbDJPYd3fbGII44v1D96DS1wZJSQ35YD74w6Ap3oq",
+							"type": "text"
+						},
+						{
+							"key": "price",
+							"value": "5",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://{{hostname}}:5000/v1/product",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"port": "5000",
+					"path": [
+						"v1",
+						"product"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create product, add name with unicode chars (positive case)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "b90ca7ce-d5fb-458e-be13-4e99fb7d0266",
+						"exec": [
+							"",
+							"pm.test(\"response is ok\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"pm.test(\"the added product exists\", function () {",
+							"    var hostname = pm.environment.get(\"hostname\");",
+							"    ",
+							"    pm.sendRequest('http://'+hostname+':5000/v1/products', function (err, res) {",
+							"        var jsonData = res.json();",
+							"        var last_product = jsonData[jsonData.length-1];",
+							"        pm.expect(last_product.name).to.include(\"Τελος στο όνομα\");",
+							"        pm.expect(last_product.price).to.equal(\"5\");",
+							"        pm.expect(last_product.id).to.be.a('number');",
+							"    });",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "1e242e97-e980-4f7f-aa53-972d6a9d32cd",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "name",
+							"value": "Τελος στο όνομα",
+							"type": "text"
+						},
+						{
+							"key": "price",
+							"value": "5",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://{{hostname}}:5000/v1/product",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"port": "5000",
+					"path": [
+						"v1",
+						"product"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create product, add string as price (negative case)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "b90ca7ce-d5fb-458e-be13-4e99fb7d0266",
+						"exec": [
+							"",
+							"pm.test(\"response is 400 (InvalidInput)\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "1e242e97-e980-4f7f-aa53-972d6a9d32cd",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "name",
+							"value": "Lavender shortbread {{timestamp_test}}",
+							"type": "text"
+						},
+						{
+							"key": "price",
+							"value": "Not a number",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://{{hostname}}:5000/v1/product",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"port": "5000",
+					"path": [
+						"v1",
+						"product"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "1d2cfb36-e1f6-44c5-b7aa-11cadfc0f253",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "2f806a32-85a9-4903-b2b0-e092d1f6cdf2",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "7618c9bf-8b11-4670-a050-8969f6f2bf9b",
+			"key": "hostname",
+			"value": "localhost",
+			"type": "string"
+		}
+	]
+}
