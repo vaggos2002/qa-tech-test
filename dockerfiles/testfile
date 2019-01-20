@@ -2,6 +2,3 @@ FROM postman/newman:ubuntu
 
 COPY ./tests /tests
 WORKDIR /tests
-
-# RUN the tests
-CMD run /tests/collection.json
